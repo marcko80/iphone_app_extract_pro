@@ -141,6 +141,8 @@ def get_installed_apps():
                 print(f"{Fore.RED}ATTENZIONE: Trovata app malevola - {app_name} ({bundle_id}) | Nota: {illegitimate_apps.get(bundle_id)}{Style.RESET_ALL}")
             elif status == "Suspicious" and anomaly:
                 print(f"{Fore.YELLOW}NOTA: App sospetta con anomalia - {app_name} ({bundle_id}) | Anomalia: {anomaly}{Style.RESET_ALL}")
+            elif status == "Legitimate" and bundle_id.startswith("com.apple"):
+                print(f"{Fore.GREEN}INFO: App preinstallata Apple - {app_name} ({bundle_id}){Style.RESET_ALL}")
 
             app_list.append({
                 "name": app_name,

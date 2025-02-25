@@ -1,7 +1,12 @@
 import os
 import json
+from datetime import datetime
 from pymobiledevice3.lockdown import create_using_usbmux
 from pymobiledevice3.services.installation_proxy import InstallationProxyService
+from colorama import init, Fore, Style
+
+# Inizializza colorama per supportare i colori su Windows
+init()
 
 # Nomi dei file dei database locali
 LEGITIMATE_APPS_FILE = "legitimate_apps.json"
@@ -101,8 +106,14 @@ def get_installed_apps():
         lockdown = create_using_usbmux()
         app_service = InstallationProxyService(lockdown=lockdown)
 
-        # Recupera l'IMEI dal dispositivo
-        imei = lockdown.get_value(key="InternationalMobileEquipmentIdentity") or "Non disponibile"
+        # Recupera metadati del dispositivo
+        device_info = {
+            "imei": lockdown.get_value(key="InternationalMobileEquipmentIdentity") or "Non disponibile",
+            "model": lockdown.get_value(key="ProductType") or "Non disponibile",
+            "ios_version": lockdown.get_value(key="ProductVersion") or "Non disponibile",
+            "serial": lockdown.get_value(key="SerialNumber") or "Non disponibile",
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
 
         # Estrai l'elenco delle applicazioni installate
         apps = app_service.get_apps()
@@ -125,6 +136,12 @@ def get_installed_apps():
             # Controlla comportamenti sospetti solo per app Suspicious o Malicious
             anomaly = has_suspicious_behavior(app) if status != "Legitimate" else None
 
+            # Evidenziazione visiva nel terminale con colorama
+            if status == "Malicious":
+                print(f"{Fore.RED}ATTENZIONE: Trovata app malevola - {app_name} ({bundle_id}) | Nota: {illegitimate_apps.get(bundle_id)}{Style.RESET_ALL}")
+            elif status == "Suspicious" and anomaly:
+                print(f"{Fore.YELLOW}NOTA: App sospetta con anomalia - {app_name} ({bundle_id}) | Anomalia: {anomaly}{Style.RESET_ALL}")
+
             app_list.append({
                 "name": app_name,
                 "bundle_id": bundle_id,
@@ -133,16 +150,20 @@ def get_installed_apps():
                 "known_name": illegitimate_apps.get(bundle_id) if status == "Malicious" else None
             })
 
-        return app_list, imei
+        return app_list, device_info
 
     except Exception as e:
-        print(f"Errore durante l'estrazione delle app o dell'IMEI: {e}")
-        return [], "Non disponibile"
+        print(f"Errore durante l'estrazione delle app o dei metadati: {e}")
+        return [], {"imei": "Non disponibile", "model": "Non disponibile", "ios_version": "Non disponibile", "serial": "Non disponibile", "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
-def save_to_file(app_list, imei, filename="installed_apps.txt"):
+def save_to_file(app_list, device_info, filename="installed_apps.txt"):
     try:
         with open(filename, "w", encoding="utf-8") as file:
-            file.write(f"IMEI del dispositivo analizzato: {imei}\n")
+            file.write(f"Analisi eseguita il: {device_info['timestamp']}\n")
+            file.write(f"IMEI: {device_info['imei']}\n")
+            file.write(f"Modello: {device_info['model']}\n")
+            file.write(f"Versione iOS: {device_info['ios_version']}\n")
+            file.write(f"Numero di serie: {device_info['serial']}\n")
             file.write("-" * 50 + "\n")
             if not app_list:
                 file.write("Nessuna applicazione trovata o errore di connessione.\n")
@@ -162,8 +183,8 @@ def save_to_file(app_list, imei, filename="installed_apps.txt"):
 
 def main():
     print("Collega il tuo iPhone tramite USB e assicurati che sia sbloccato...")
-    apps, imei = get_installed_apps()
-    save_to_file(apps, imei)
+    apps, device_info = get_installed_apps()
+    save_to_file(apps, device_info)
 
 if __name__ == "__main__":
     main()

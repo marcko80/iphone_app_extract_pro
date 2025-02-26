@@ -42,4 +42,13 @@
     "com.appaspect.qrcodescanner": "QR Code Scanner: Barcode",
     "com.appaspect.smsbackup": "SMS Backup: Restore Messages",
     "com.appaspect.unitconverter": "Unit Converter: All in One"
+    "com.cloudchat.app": "CloudChat",
+    "com.lightspy.macos": "LightSpy macOS Variant",
+    "com.amos.filejuicer": "File Juicer (AMOS Stealer Variant)",
+    "com.amos.debitcredit": "Debit & Credit (AMOS Stealer Variant)",
+    "com.amos.parallel": "Parallel (AMOS Stealer Variant)",
+    "com.amos.notion": "Notion (AMOS Stealer Variant)",
+    "com.cuckoo.homebrew": "Homebrew (Cuckoo AMOS Variant)",
+    "com.xcodeghost.app": "XcodeGhost Infected App",
+    "com.triangulation.spyware": "Operation Triangulation Spyware"
 }
